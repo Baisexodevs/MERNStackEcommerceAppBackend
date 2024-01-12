@@ -8,6 +8,8 @@ import { TryCatch } from "../middlewares/error.js";
 import { Product } from "../models/products.js";
 import ErrorHandler from "../utils/utility-class.js";
 import { rm } from "fs";
+// import { faker } from "@faker-js/faker";
+import { getRandomValues } from "crypto";
 
 export const newProduct = TryCatch(
   async (req: Request<{}, {}, NewProductRequestBody>, res, next) => {
@@ -196,3 +198,39 @@ export const deleteProduct = TryCatch(async (req, res, next) => {
     message: "Product Deleted Successfully",
   });
 });
+
+// generate random products
+// const generateRandomProducts = async (count: number = 10) => {
+//   const products = [];
+//   for (let i = 0; i < count; i++) {
+//     const product = {
+//       name: faker.commerce.productName(),
+//       photo: "uploads\\9947a68f-dbd9-4321-a4d1-087f9c49f94a.webp",
+//       price: faker.commerce.price({ min: 1500, max: 80000, dec: 0 }),
+//       stock: faker.commerce.price({ min: 0, max: 100, dec: 0 }),
+//       category: faker.commerce.department(),
+//       createdAt: new Date(faker.date.past()),
+//       updatedAt: new Date(faker.date.past()),
+//       __v: 0,
+//     };
+
+//     products.push(product);
+//   }
+
+//   await Product.create(products);
+//   console.log({ success: true });
+// };
+
+// delete the multiple random products
+// const deleteRandomsProducts = async (count: Number = 10) => {
+//   const products = await Product.find().skip(2);
+
+//   products.forEach(async (product) => {
+//     await product.deleteOne();
+//   });
+
+//   console.log({ success: true });
+// };
+
+// deleteRandomsProducts(75);
+// generateRandomProducts(40)
