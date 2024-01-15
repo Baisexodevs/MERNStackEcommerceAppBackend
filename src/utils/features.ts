@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { InvalidateCacheProps } from "../types/types.js";
+import { InvalidateCacheProps, OrderItemType } from "../types/types.js";
 import { Product } from "../models/products.js";
 import { myCache } from "../app.js";
 
@@ -12,28 +12,79 @@ export const connectDB = () => {
     .catch((e) => console.log("Db connection Failed", e));
 };
 
-export const invalidateCache = async ({
+// Product
+// export const invalidateCache = async ({
+//   product,
+//   order,
+//   admin,
+// }: InvalidateCacheProps) => {
+//   if (product) {
+//     const productKeys: string[] = [
+//       "latest-product",
+//       "categories",
+//       "all-products",
+//     ];
+
+//     const products = await Product.find({}).select("_id");
+
+//     products.forEach((i) => {
+//       productKeys.push(`product-${i._id}`);
+//     });
+
+//     myCache.del(productKeys);
+//   } else if (order) {
+//     return "order";
+//   } else if (admin) {
+//     return "admin";
+//   }
+// };
+export const invalidateCache = ({
   product,
   order,
   admin,
+  userId,
+  orderId,
+  productId,
 }: InvalidateCacheProps) => {
   if (product) {
     const productKeys: string[] = [
-      "latest-product",
+      "latest-products",
       "categories",
       "all-products",
     ];
 
-    const products = await Product.find({}).select("_id");
+    if (typeof productId === "string") productKeys.push(`product-${productId}`);
 
-    products.forEach((i) => {
-      productKeys.push(`product-${i._id}`);
-    });
+    if (typeof productId === "object")
+      productId.forEach((i) => productKeys.push(`product-${i}`));
 
     myCache.del(productKeys);
-  } else if (order) {
-    return "order";
-  } else if (admin) {
-    return "admin";
   }
+  if (order) {
+    const ordersKeys: string[] = [
+      "all-orders",
+      `my-orders-${userId}`,
+      `order-${orderId}`,
+    ];
+
+    myCache.del(ordersKeys);
+  }
+  if (admin) {
+    myCache.del([
+      "admin-stats",
+      "admin-pie-charts",
+      "admin-bar-charts",
+      "admin-line-charts",
+    ]);
+  }
+};
+
+// Orders
+export const reduceStock = async (orderItems: OrderItemType[]) => {
+  orderItems.forEach(async (order) => {
+    const product = await Product.findById(order.productId);
+    if (!product) throw new Error("Product Not Found");
+    product.stock -= order.quantity;
+    await product.save();
+  });
 };
